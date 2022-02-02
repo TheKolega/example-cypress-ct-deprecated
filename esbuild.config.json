@@ -1,0 +1,6 @@
+{
+  "platform": "browser",
+  "bundle": true,
+  "format": "esm",
+  "minify": false
+}

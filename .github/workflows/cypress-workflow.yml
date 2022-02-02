@@ -1,0 +1,121 @@
+# name: Test with Cypress
+
+# # Trigger after the build workflow succeeds
+# on:
+#   workflow_run:
+#     branches:
+#       - master
+#     workflows: ["Build and deploy"]
+#     types:
+#       - completed
+
+# concurrency:
+#   group: cypress-after-build-master
+
+# jobs:
+#   cypress-setup-and-run:
+#     if: github.event.workflow_run.conclusion == 'success'
+#     runs-on: ubuntu-20.04
+#     timeout-minutes: 25
+
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v2
+#         with:
+#           # TODO: check this: This is important to fetch the changes to the previous commit
+#           fetch-depth: 0
+#           persist-credentials: false
+
+#       # - name: Use cypress .env
+#       #   run: cp .env.cypress-gh-workflow .env
+
+#       - name: Setup pnpm
+#         uses: pnpm/action-setup@v2.0.1
+#         with:
+#           version: ^6.24.2
+#           run_install: false
+
+#       - name: Setup node
+#         uses: actions/setup-node@v2
+#         with:
+#           node-version: "16"
+#           cache: "pnpm"
+
+#       - name: Install pnpm
+#         run: pnpm install
+
+#       - name: Print Cypress info
+#         run: pnpm cypress info
+
+#       - name: Run a smoke test
+#         uses: cypress-io/github-action@v2
+#         with:
+#           install: false
+#           browser: chrome
+#           spec: cypress/integration/1-getting-started/todo.spec.js
+#           wait-on: ${{ env.CYPRESS_BASE_URL }}
+#           wait-on-timeout: 300
+
+#       - name: Run all integration tests
+#         uses: cypress-io/github-action@v2
+#         with:
+#           install: false
+#           browser: chrome
+
+#       # # Disabled as the screenshots are embedded in the HTML report
+#       # - name: Save screenshots
+#       #   uses: actions/upload-artifact@v2
+#       #   if: failure() || cancelled()
+#       #   with:
+#       #     name: cy-screenshots-${{ github.run_id }}-#${{ github.run_number }}
+#       #     path: ${{ github.workspace }}/cypress/screenshots
+#       #     retention-days: 10
+#       #     if-no-files-found: ignore
+
+#       # # Disabled as test recording is disabled as well
+#       # - name: Save videos
+#       #   uses: actions/upload-artifact@v2
+#       #   if: failure() || cancelled()
+#       #   with:
+#       #     name: cy-videos-${{ github.run_id }}-#${{ github.run_number }}
+#       #     path: ${{ github.workspace }}/cypress/videos
+#       #     retention-days: 10
+#       #     if-no-files-found: ignore
+
+#       - name: Save E2E HTML report
+#         uses: actions/upload-artifact@v2
+#         if: failure()
+#         with:
+#           name: cy-e2e-report-${{ github.run_id }}-#${{ github.run_number }}
+#           path: ${{ github.workspace }}/cypress/reports/e2e/cy-e2e-report.html
+#           retention-days: 10
+#           if-no-files-found: ignore
+
+#       # - name: Save coverage report
+#       #   uses: actions/upload-artifact@v2
+#       #   with:
+#       #     name: cy-html-reports-${{ github.run_id }}-#${{ github.run_number }}
+#       #     path: ${{ github.workspace }}/cypress/coverage/**
+#       #     retention-days: 2
+#       #     if-no-files-found: ignore
+
+#       - name: Report to Slack
+#         uses: 8398a7/action-slack@v3
+#         if: failure() || cancelled()
+#         with:
+#           # status: ${{ job.status }}
+#           status: "custom"
+#           author_name: ""
+#           fields: workflow,took,commit
+#           channel: "#cypress-reports"
+#           custom_payload: |
+#             {
+#               "attachments": [{
+#                 "fallback": "Error while creating workflow Slack report.",
+#                 "pretext": "${{ job.status }}" === "failure" ? ":x: Workflow failed:" : ":warning: Workflow cancelled:",
+#                 "color": "${{ job.status }}" === "failure" ? "danger" : "warning",
+#                 "text": `${process.env.AS_WORKFLOW} ${{ job.status }} (${process.env.AS_COMMIT}), took ${process.env.AS_TOOK} \n <${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}#artifacts|*View artifacts*>`
+#               }]
+#             }
+#         env:
+#           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_BOT_WEBHOOK }} # required

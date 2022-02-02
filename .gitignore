@@ -1,0 +1,15 @@
+# Keep
+!.gitkeep
+
+# Ignore
+.DS_Store
+*.local
+/cypress/coverage/**/*
+/cypress/downloads/**/*
+/cypress/fixtures/**/*
+/cypress/reports/**/*
+/cypress/screenshots/**/*
+/cypress/videos/**/*
+dist
+dist-ssr
+node_modules

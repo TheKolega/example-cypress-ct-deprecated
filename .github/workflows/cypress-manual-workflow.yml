@@ -1,0 +1,172 @@
+name: _Test with Cypress, manual trigger
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_deployment:
+        description: 'Subdomain of the deployment to test (ex. "stage", "pr-123")'
+        type: string
+        required: true
+        default: "stage"
+      test_components:
+        description: "Run component tests?"
+        type: choice
+        required: true
+        default: "Run e2e without CTs"
+        options:
+          - "Run e2e without CTs"
+          - "Run CTs and e2e"
+          - "Run just CTs"
+
+env:
+  INPUT_TARGET_DEPLOYMENT: ${{ github.event.inputs.target_deployment }}
+  INPUT_TEST_COMPONENTS: ${{ github.event.inputs.test_components }}
+  NODE_OPTIONS: "--max-old-space-size=6144"
+
+jobs:
+  cypress-setup-and-run:
+    runs-on: ubuntu-20.04
+    timeout-minutes: 25
+
+    steps:
+      # - name: Set Swap Space
+      #   uses: pierotofy/set-swap-space@v1.0
+      #   with:
+      #     # Default by Node is 4gb
+      #     swap-size-gb: 10
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          # TODO: check this: This is important to fetch the changes to the previous commit
+          fetch-depth: 0
+          persist-credentials: false
+
+      # - name: Use cypress .env
+      #   run: cp .env.cypress-gh-workflow .env
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2.0.1
+        with:
+          version: ^6.24.2
+          run_install: false
+
+      - name: Setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+          cache: "pnpm"
+
+      - name: Print free memory 1
+        run: free -m
+      - name: Print node memory 1
+        run: node scripts/node-memory-printout.js
+      - name: Print env 1
+        run: echo $NODE_OPTIONS
+      - name: edit node env
+        run: echo "{NODE_OPTIONS}={--max_old_space_size=5120}" >> $GITHUB_ENV
+      - name: Print envs 2
+        run: echo $NODE_OPTIONS
+      - name: Print free memory 2
+        run: free -m
+      - name: Print node memory 2
+        run: node scripts/node-memory-printout.js
+
+      - name: Install pnpm
+        run: pnpm install
+
+      - name: Print Cypress info
+        run: pnpm cypress info
+
+      - name: Run all component tests
+        uses: cypress-io/github-action@v2
+        if: env.INPUT_TEST_COMPONENTS != 'Run e2e without CTs'
+        timeout-minutes: 6
+        with:
+          install: false
+          # browser: chrome
+          command: pnpm cypress run-ct --browser=chrome
+
+      - name: Run a smoke test
+        uses: cypress-io/github-action@v2
+        if: env.INPUT_TEST_COMPONENTS != 'Run just CTs'
+        with:
+          install: false
+          browser: chrome
+          spec: cypress/integration/1-getting-started/todo.spec.js
+          wait-on: ${{ env.CYPRESS_BASE_URL }}
+          wait-on-timeout: 300
+
+      - name: Run all integration tests
+        uses: cypress-io/github-action@v2
+        if: env.INPUT_TEST_COMPONENTS != 'Run just CTs'
+        with:
+          install: false
+          browser: chrome
+
+      # # Disabled as the screenshots are embedded in the HTML report
+      # - name: Save screenshots
+      #   uses: actions/upload-artifact@v2
+      #   if: failure() || cancelled()
+      #   with:
+      #     name: cy-screenshots-${{ github.run_id }}-#${{ github.run_number }}
+      #     path: ${{ github.workspace }}/cypress/screenshots
+      #     retention-days: 10
+      #     if-no-files-found: ignore
+
+      # # Disabled as test recording is disabled as well
+      # - name: Save videos
+      #   uses: actions/upload-artifact@v2
+      #   if: failure() || cancelled()
+      #   with:
+      #     name: cy-videos-${{ github.run_id }}-#${{ github.run_number }}
+      #     path: ${{ github.workspace }}/cypress/videos
+      #     retention-days: 10
+      #     if-no-files-found: ignore
+
+      - name: Save E2E HTML report
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: cy-e2e-report-${{ github.run_id }}-#${{ github.run_number }}
+          path: ${{ github.workspace }}/cypress/reports/e2e/cy-e2e-report.html
+          retention-days: 10
+          if-no-files-found: ignore
+
+      - name: Save CT HTML report
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: cy-ct-report-${{ github.run_id }}-#${{ github.run_number }}
+          path: ${{ github.workspace }}/cypress/reports/ct/cy-ct-report.html
+          retention-days: 10
+          if-no-files-found: ignore
+
+      # - name: Save coverage report
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: cy-html-reports-${{ github.run_id }}-#${{ github.run_number }}
+      #     path: ${{ github.workspace }}/cypress/coverage/**
+      #     retention-days: 2
+      #     if-no-files-found: ignore
+
+      # - name: Report to Slack
+      #   uses: 8398a7/action-slack@v3
+      #   if: failure() || cancelled()
+      #   with:
+      #     # status: ${{ job.status }}
+      #     status: "custom"
+      #     author_name: ""
+      #     fields: workflow,took,commit
+      #     channel: "#cypress-reports"
+      #     custom_payload: |
+      #       {
+      #         "attachments": [{
+      #           "fallback": "Error while creating workflow Slack report.",
+      #           "pretext": "${{ job.status }}" === "failure" ? ":x: Workflow failed:" : ":warning: Workflow cancelled:",
+      #           "color": "${{ job.status }}" === "failure" ? "danger" : "warning",
+      #           "text": `${process.env.AS_WORKFLOW} ${{ job.status }} (${process.env.AS_COMMIT}), took ${process.env.AS_TOOK} \n <${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}#artifacts|*View artifacts*>`
+      #         }]
+      #       }
+      #   env:
+      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_BOT_WEBHOOK }} # required

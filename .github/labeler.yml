@@ -1,0 +1,10 @@
+awaiting%20review:
+  - /**/*
+
+frontend:
+  - src/components/**/*
+
+tests:
+  - all: ["cypress/component/**/*"]
+  - all: ["cypress/e2e/**/*"]
+  - all: ["cypress/integration/**/*"]

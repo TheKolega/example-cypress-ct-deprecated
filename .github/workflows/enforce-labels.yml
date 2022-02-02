@@ -1,0 +1,17 @@
+name: Enforce labels
+
+on:
+  pull_request:
+    branches:
+      - master
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+jobs:
+  enforce-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Avoid merging PR with do not merge labels
+        if: "contains( github.event.pull_request.labels.*.name, 'do not merge')"
+        run: |
+          echo "Do not merge label is present, throw error to avoid merging"
+          exit 1

@@ -1,0 +1,63 @@
+{
+  "$schema": "https://on.cypress.io/cypress.schema.json",
+  "projectId": "xpdoj7",
+
+  "reporter": "cypress-multi-reporters",
+
+  "chromeWebSecurity": false,
+  "video": false,
+  "retries": {
+    "runMode": 1,
+    "openMode": 1
+  },
+
+  "e2e": {
+    "integrationFolder": "cypress/integration",
+    "screenshotsFolder": "cypress/screenshots/e2e",
+    "videosFolder": "cypress/videos/e2e",
+    "fixturesFolder": "cypress/fixtures/e2e",
+    "downloadsFolder": "cypress/downloads/e2e",
+    "reporterOptions": {
+      "reporterEnabled": "cypress-mochawesome-reporter",
+      "cypressMochawesomeReporterReporterOptions": {
+        "reportDir": "cypress/reports/e2e/",
+        "reportFilename": "cy-e2e-report",
+        "reportTitle": "Cypress E2E tests report --- (Passing tests hidden by default)",
+        "overwrite": false,
+        "json": true,
+        "html": false,
+        "charts": true,
+        "showPassed": false,
+        "showPending": false,
+        "inline": true,
+        "embeddedScreenshots": true
+      }
+    },
+    "defaultCommandTimeout": 30000
+  },
+
+  "component": {
+    "componentFolder": "cypress/component",
+    "screenshotsFolder": "cypress/screenshots/ct",
+    "videosFolder": "cypress/videos/ct",
+    "fixturesFolder": "cypress/fixtures/ct",
+    "downloadsFolder": "cypress/downloads/ct",
+    "reporterOptions": {
+      "reporterEnabled": "cypress-mochawesome-reporter",
+      "cypressMochawesomeReporterReporterOptions": {
+        "reportDir": "cypress/reports/ct/",
+        "reportFilename": "cy-ct-report",
+        "reportTitle": "Cypress component tests report --- (Passing tests hidden by default)",
+        "overwrite": false,
+        "json": true,
+        "html": false,
+        "charts": true,
+        "showPassed": false,
+        "showPending": false,
+        "inline": true,
+        "embeddedScreenshots": true
+      }
+    },
+    "defaultCommandTimeout": 1000
+  }
+}
