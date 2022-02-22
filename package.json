@@ -4,18 +4,23 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:ct": "cypress run-ct --parallel --browser=chrome --ci-build-id=gitlab --record --key=1a264ec4-362a-44cb-bf03-8c6feb92bfd4"
   },
   "dependencies": {
     "vue": "^3.2.25"
   },
   "devDependencies": {
+    "@bahmutov/cypress-esbuild-preprocessor": "^2.1.2",
     "@cypress/vite-dev-server": "^2.2.2",
-    "@cypress/vue": "^2.2.3",
+    "@cypress/vue": "^3.1.1",
+    "@typescript-eslint/eslint-plugin": "^5.10.2",
+    "@typescript-eslint/parser": "^5.10.2",
     "@vitejs/plugin-vue": "^2.0.0",
     "cypress": "^9.4.1",
     "cypress-mochawesome-reporter": "^2.3.0",
     "cypress-multi-reporters": "^1.5.0",
+    "dotenv": "^15.0.0",
     "eslint": "^8.8.0",
     "eslint-import-resolver-typescript": "^2.5.0",
     "eslint-plugin-cypress": "^2.12.1",

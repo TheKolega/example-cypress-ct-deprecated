@@ -3,6 +3,7 @@
 
 # Ignore
 .DS_Store
+*.env*
 *.local
 /cypress/coverage/**/*
 /cypress/downloads/**/*

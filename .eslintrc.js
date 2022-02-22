@@ -1,11 +1,7 @@
 module.exports = {
   root: true,
-  plugins: [
-    "vue",
-    // "prettier",
-    "import",
-    "cypress",
-  ],
+  parser: "@typescript-eslint/parser",
+  plugins: ["vue", "prettier", "@typescript-eslint", "import", "cypress"],
   env: {
     browser: true,
     node: true,
@@ -13,12 +9,14 @@ module.exports = {
   },
   extends: [
     "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:prettier/recommended",
     "plugin:cypress/recommended",
     "plugin:vue/vue3-recommended",
     // "prettier",
     // "@vue/prettier",
     // "@vue/prettier/@typescript-eslint",
-    // "plugin:prettier/recommended",
     "plugin:import/recommended",
     "plugin:import/typescript",
   ],
@@ -47,9 +45,9 @@ module.exports = {
       typescript: {
         alwaysTryTypes: true, // always try to resolve types under `<root>@types` directory even it doesn't contain any source code, like `@types/unist`
       },
-      // alias: {
-      //   extensions: [".js", ".jsx", ".vue"],
-      // },
+    },
+    alias: {
+      extensions: [".js", ".jsx", ".ts", ".tsx", ".vue"],
     },
   },
 }
